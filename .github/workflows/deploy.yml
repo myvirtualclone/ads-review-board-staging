@@ -24,7 +24,8 @@ jobs:
       - name: Check out pinned ShipBoard source
         uses: actions/checkout@v5
         with:
-          repository: myvirtualclone/ads-review-board`n          token: ${{ secrets.SOURCE_REPO_TOKEN }}
+          repository: myvirtualclone/ads-review-board
+          token: ${{ secrets.SOURCE_REPO_TOKEN }}
           ref: ${{ vars.SHIPBOARD_SOURCE_REF }}
           path: source
 
