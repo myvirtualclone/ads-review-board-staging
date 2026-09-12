@@ -40,6 +40,10 @@ jobs:
           find source -maxdepth 1 -type f \( -name '*.js' -o -name '*.html' -o -name '*.css' -o -name '*.ico' -o -name '*.png' -o -name '*.webp' -o -name '.nojekyll' \) -exec cp '{}' public/ \;
           cp -R source/assets public/assets
           cp -R source/vendor public/vendor
+          sed -i -E "s|(styles\.css\?v=)[^\"]+|\1${SOURCE_REF}|" public/index.html
+          sed -i -E "s|(creative-workflow-api\.js\?v=)[^\"]+|\1${SOURCE_REF}|" public/index.html
+          sed -i -E "s|(provider-operations-api\.js\?v=)[^\"]+|\1${SOURCE_REF}|" public/index.html
+          sed -i -E "s|(app\.js\?v=)[^\"]+|\1${SOURCE_REF}|" public/index.html
           cat > public/config.js <<EOF
           window.ARB_CONFIG = Object.freeze({
             supabaseUrl: "${SUPABASE_URL}",
