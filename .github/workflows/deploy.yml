@@ -1,0 +1,65 @@
+name: Deploy ShipBoard staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pinned ShipBoard source
+        uses: actions/checkout@v4
+        with:
+          repository: myvirtualclone/ads-review-board
+          ref: ${{ vars.SHIPBOARD_SOURCE_REF }}
+          path: source
+
+      - name: Assemble staging artifact
+        env:
+          SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.STAGING_SUPABASE_PUBLISHABLE_KEY }}
+          SOURCE_REF: ${{ vars.SHIPBOARD_SOURCE_REF }}
+        run: |
+          set -euo pipefail
+          mkdir -p public
+          find source -maxdepth 1 -type f \( -name '*.js' -o -name '*.html' -o -name '*.css' -o -name '*.ico' -o -name '*.png' -o -name '*.webp' -o -name '.nojekyll' \) -exec cp '{}' public/ \;
+          cp -R source/assets public/assets
+          cp -R source/vendor public/vendor
+          cat > public/config.js <<EOF
+          window.ARB_CONFIG = Object.freeze({
+            supabaseUrl: "${SUPABASE_URL}",
+            supabaseAnonKey: "${SUPABASE_PUBLISHABLE_KEY}",
+            campaignId: "pb75",
+            useSupabase: true,
+            requireAuth: true,
+            environment: "staging"
+          });
+          EOF
+          printf '%s\n' 'sprint/production-candidate-121' > public/PUBLISH_BRANCH.txt
+          printf '%s\n' "$SOURCE_REF" > public/PUBLISH_STAMP.txt
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
