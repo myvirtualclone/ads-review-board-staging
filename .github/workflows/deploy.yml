@@ -22,9 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out pinned ShipBoard source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          repository: myvirtualclone/ads-review-board
+          repository: myvirtualclone/ads-review-board`n          token: ${{ secrets.SOURCE_REPO_TOKEN }}
           ref: ${{ vars.SHIPBOARD_SOURCE_REF }}
           path: source
 
